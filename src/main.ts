@@ -1,2 +1,2 @@
-import Test from './components/Test';
-export { Test };
+import SketchBoard from './components/SketchBoard';
+export { SketchBoard };
