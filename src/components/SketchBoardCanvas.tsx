@@ -1,5 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 
+const canvasWidth = 400;
+const canvasHeight = 400;
+
 export interface Point {
   x: number;
   y: number;
@@ -36,6 +39,7 @@ export default function SketchBoardCanvas({ sketch, onUserDraw }: SketchBoardPro
   useEffect(() => {
     if (canvasRef?.current != null) {
       const context = canvasRef.current.getContext('2d')!;
+      context.clearRect(0, 0, canvasWidth, canvasHeight);
       context.lineCap = 'round';
       sketch.lines.forEach((line) => {
         context.beginPath();
@@ -69,8 +73,8 @@ export default function SketchBoardCanvas({ sketch, onUserDraw }: SketchBoardPro
 
   return (
     <canvas
-      width="400"
-      height="400"
+      width={canvasWidth}
+      height={canvasHeight}
       ref={canvasRef}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
