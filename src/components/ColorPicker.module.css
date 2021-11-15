@@ -7,9 +7,14 @@
 }
 
 .colorPickerOption {
-  width: 20px;
-  height: 20px;
-  border: 1px solid black;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  border: 2px solid white;
   border-radius: 50%;
   margin-right: 10px;
+}
+
+.colorPickerOption.active {
+  border: 2px solid black;
 }

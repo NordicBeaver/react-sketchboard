@@ -8,7 +8,7 @@ export default function SketchBoard() {
     lines: [],
   });
 
-  const colors = ['ff0000', '00ff00', '0000ff'];
+  const colors = ['000000', 'ff0000', '00ff00', '0000ff'];
 
   const [currentColor, setCurrentColor] = useState('000000');
 
@@ -21,7 +21,7 @@ export default function SketchBoard() {
 
   return (
     <div>
-      <ColorPicker options={colors} onPick={(color) => setCurrentColor(color)}></ColorPicker>
+      <ColorPicker options={colors} current={currentColor} onPick={(color) => setCurrentColor(color)}></ColorPicker>
       <SketchBoardCanvas sketch={sketch} onUserDraw={handleUserDraw}></SketchBoardCanvas>
     </div>
   );
