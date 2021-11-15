@@ -8,6 +8,7 @@ export interface Point {
 export interface SketchLine {
   from: Point;
   to: Point;
+  thickness: number;
   color: string;
 }
 
@@ -38,6 +39,7 @@ export default function SketchBoardCanvas({ sketch, onUserDraw }: SketchBoardPro
       sketch.lines.forEach((line) => {
         context.beginPath();
         context.strokeStyle = `#${line.color}`;
+        context.lineWidth = line.thickness;
         context.moveTo(line.from.x, line.from.y);
         context.lineTo(line.to.x, line.to.y);
         context.stroke();
