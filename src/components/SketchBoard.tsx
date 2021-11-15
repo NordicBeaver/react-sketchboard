@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import SketchBoardCanvas, { Point, Sketch, SketchLine } from './SketchBoardCanvas';
 

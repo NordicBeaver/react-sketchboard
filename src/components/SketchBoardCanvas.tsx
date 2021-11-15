@@ -32,8 +32,8 @@ export default function SketchBoardCanvas({ sketch, onUserDraw }: SketchBoardPro
   });
 
   useEffect(() => {
-    if (canvasRef != null) {
-      const context = canvasRef.current.getContext('2d');
+    if (canvasRef?.current != null) {
+      const context = canvasRef.current.getContext('2d')!;
       sketch.lines.forEach((line) => {
         context.beginPath();
         context.moveTo(line.from.x, line.from.y);
