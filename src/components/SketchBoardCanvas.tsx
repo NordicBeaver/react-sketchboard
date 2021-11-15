@@ -8,6 +8,7 @@ export interface Point {
 export interface SketchLine {
   from: Point;
   to: Point;
+  color: string;
 }
 
 export interface Sketch {
@@ -36,6 +37,7 @@ export default function SketchBoardCanvas({ sketch, onUserDraw }: SketchBoardPro
       const context = canvasRef.current.getContext('2d')!;
       sketch.lines.forEach((line) => {
         context.beginPath();
+        context.strokeStyle = `#${line.color}`;
         context.moveTo(line.from.x, line.from.y);
         context.lineTo(line.to.x, line.to.y);
         context.stroke();

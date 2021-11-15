@@ -1,18 +1,28 @@
 import React from 'react';
 import { useState } from 'react';
+import ColorPicker from './ColorPicker';
 import SketchBoardCanvas, { Point, Sketch, SketchLine } from './SketchBoardCanvas';
 
 export default function SketchBoard() {
   const [sketch, setSketch] = useState<Sketch>({
-    lines: [{ from: { x: 10, y: 10 }, to: { x: 20, y: 20 } }],
+    lines: [],
   });
 
+  const colors = ['ff0000', '00ff00', '0000ff'];
+
+  const [currentColor, setCurrentColor] = useState('000000');
+
   const handleUserDraw = (from: Point, to: Point) => {
-    const newLine: SketchLine = { from: from, to: to };
+    const newLine: SketchLine = { from: from, to: to, color: currentColor };
     const newLines = [...sketch.lines, newLine];
     const newSketch = { ...sketch, lines: newLines };
     setSketch(newSketch);
   };
 
-  return <SketchBoardCanvas sketch={sketch} onUserDraw={handleUserDraw}></SketchBoardCanvas>;
+  return (
+    <div>
+      <ColorPicker options={colors} onPick={(color) => setCurrentColor(color)}></ColorPicker>
+      <SketchBoardCanvas sketch={sketch} onUserDraw={handleUserDraw}></SketchBoardCanvas>
+    </div>
+  );
 }
