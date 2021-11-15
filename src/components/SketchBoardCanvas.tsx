@@ -36,6 +36,7 @@ export default function SketchBoardCanvas({ sketch, onUserDraw }: SketchBoardPro
   useEffect(() => {
     if (canvasRef?.current != null) {
       const context = canvasRef.current.getContext('2d')!;
+      context.lineCap = 'round';
       sketch.lines.forEach((line) => {
         context.beginPath();
         context.strokeStyle = `#${line.color}`;
