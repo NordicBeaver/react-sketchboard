@@ -1,37 +1,17 @@
-import React, { useEffect, useRef } from 'react';
+import { useState } from 'react';
+import SketchBoardCanvas, { Point, Sketch, SketchLine } from './SketchBoardCanvas';
 
-export interface Point {
-  x: number;
-  y: number;
-}
+export default function SketchBoard() {
+  const [sketch, setSketch] = useState<Sketch>({
+    lines: [{ from: { x: 10, y: 10 }, to: { x: 20, y: 20 } }],
+  });
 
-export interface SketchLine {
-  from: Point;
-  to: Point;
-}
+  const handleUserDraw = (from: Point, to: Point) => {
+    const newLine: SketchLine = { from: from, to: to };
+    const newLines = [...sketch.lines, newLine];
+    const newSketch = { ...sketch, lines: newLines };
+    setSketch(newSketch);
+  };
 
-export interface Sketch {
-  lines: SketchLine[];
-}
-
-export interface SketchBoardProps {
-  sketch: Sketch;
-}
-
-export default function SketchBoard({ sketch }: SketchBoardProps) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  useEffect(() => {
-    if (canvasRef != null) {
-      const context = canvasRef.current.getContext('2d');
-      sketch.lines.forEach((line) => {
-        context.beginPath();
-        context.moveTo(line.from.x, line.from.y);
-        context.lineTo(line.to.x, line.to.y);
-        context.stroke();
-      });
-    }
-  }, [sketch]);
-
-  return <canvas width="400" height="400" ref={canvasRef}></canvas>;
+  return <SketchBoardCanvas sketch={sketch} onUserDraw={handleUserDraw}></SketchBoardCanvas>;
 }
