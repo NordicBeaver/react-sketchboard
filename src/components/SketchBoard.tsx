@@ -1,9 +1,13 @@
 import React from 'react';
 import { useState } from 'react';
 import { Sketch, Point, SketchLine, addPoints, substractPoints } from '../domain/Sketch';
+import { clamp } from '../util';
 import ColorPicker from './ColorPicker';
 import SketchBoardCanvas from './SketchBoardCanvas';
 import ThicknessPicker from './ThicknessPicker';
+
+const boardWidth = 400;
+const boardHeight = 400;
 
 export default function SketchBoard() {
   const [sketch, setSketch] = useState<Sketch>({
@@ -45,8 +49,12 @@ export default function SketchBoard() {
   };
 
   const handleUserPan = (from: Point, to: Point) => {
-    setPanX(panX - from.x + to.x);
-    setPanY(panY - from.y + to.y);
+    const newPanX = panX - from.x + to.x;
+    const newPanXLimited = clamp(newPanX, -boardWidth / 2, boardWidth / 2);
+    const newPanY = panY - from.y + to.y;
+    const newPanYLimited = clamp(newPanY, -boardHeight / 2, boardHeight / 2);
+    setPanX(newPanXLimited);
+    setPanY(newPanYLimited);
   };
 
   return (
@@ -63,6 +71,8 @@ export default function SketchBoard() {
         onPick={(thickness) => setCurrentThickness(thickness)}
       ></ThicknessPicker>
       <SketchBoardCanvas
+        width={boardWidth}
+        height={boardHeight}
         sketch={sketch}
         pan={{ x: panX, y: panY }}
         onUserDraw={handleUserDraw}

@@ -1,13 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { Sketch, Point, addPoints, substractPoints } from '../domain/Sketch';
 
-const canvasWidth = 400;
-const canvasHeight = 400;
-
 const MOUSE_LEFT_BUTTON_CODE = 0;
 const MOUSE_MIDDLE_BUTTON_CODE = 1;
 
-export interface SketchBoardProps {
+export interface SketchBoardCanvasProps {
+  width: number;
+  height: number;
   sketch: Sketch;
   pan: Point;
   onUserDraw?: (from: Point, to: Point) => void;
@@ -23,13 +22,15 @@ interface MouseState {
 }
 
 export default function SketchBoardCanvas({
+  width,
+  height,
   sketch,
   pan,
   onUserDraw,
   onUserStartDrawing,
   onUserFinishDrawing,
   onUserPan,
-}: SketchBoardProps) {
+}: SketchBoardCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseState = useRef<MouseState>({
     leftButtonPressed: false,
@@ -40,17 +41,17 @@ export default function SketchBoardCanvas({
   useEffect(() => {
     if (canvasRef?.current != null) {
       const context = canvasRef.current.getContext('2d')!;
-      context.clearRect(0, 0, canvasWidth, canvasHeight);
+      context.clearRect(0, 0, width, height);
 
       // Show gray background, where the drawing is not allowed
       context.fillStyle = '#cccccc';
-      context.fillRect(-canvasWidth + pan.x, -canvasHeight + pan.y, canvasWidth * 3, canvasHeight * 3);
+      context.fillRect(-width + pan.x, -height + pan.y, width * 3, height * 3);
       context.fillStyle = '#ffffff';
-      context.fillRect(0 + pan.x, 0 + pan.y, canvasWidth, canvasHeight);
+      context.fillRect(0 + pan.x, 0 + pan.y, width, height);
 
       context.save();
       context.lineCap = 'round';
-      context.rect(0 + pan.x, 0 + pan.y, canvasWidth, canvasHeight);
+      context.rect(0 + pan.x, 0 + pan.y, width, height);
       context.clip();
       sketch.lines.forEach((line) => {
         context.strokeStyle = `#${line.color}`;
@@ -65,6 +66,8 @@ export default function SketchBoardCanvas({
         });
       });
       context.restore();
+
+      const data = context.getImageData(0, 0, width, height);
     }
   }, [sketch, pan]);
 
@@ -103,8 +106,8 @@ export default function SketchBoardCanvas({
 
   return (
     <canvas
-      width={canvasWidth}
-      height={canvasHeight}
+      width={width}
+      height={height}
       ref={canvasRef}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
