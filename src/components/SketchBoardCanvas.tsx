@@ -4,6 +4,9 @@ import { Sketch, Point, addPoints, substractPoints } from '../domain/Sketch';
 const canvasWidth = 400;
 const canvasHeight = 400;
 
+const LEFT_MOUSE_BUTTON_CODE = 0;
+const MIDDLE_MOUSE_BUTTON_CODE = 1;
+
 export interface SketchBoardProps {
   sketch: Sketch;
   pan: Point;
@@ -13,7 +16,7 @@ export interface SketchBoardProps {
 }
 
 interface MouseState {
-  isPressed: boolean;
+  leftButtonPressed: boolean;
   lastPosition: Point | null;
 }
 
@@ -26,7 +29,7 @@ export default function SketchBoardCanvas({
 }: SketchBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseState = useRef<MouseState>({
-    isPressed: false,
+    leftButtonPressed: false,
     lastPosition: null,
   });
 
@@ -51,13 +54,17 @@ export default function SketchBoardCanvas({
   }, [sketch, pan]);
 
   const handleMouseDown: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
-    mouseState.current.isPressed = true;
-    onUserStartDrawing?.();
+    if (e.button === LEFT_MOUSE_BUTTON_CODE) {
+      mouseState.current.leftButtonPressed = true;
+      onUserStartDrawing?.();
+    }
   };
 
   const handleMouseUp: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
-    mouseState.current.isPressed = false;
-    onUserFinishDrawing?.();
+    if (e.button === LEFT_MOUSE_BUTTON_CODE) {
+      mouseState.current.leftButtonPressed = false;
+      onUserFinishDrawing?.();
+    }
   };
 
   const handleMouseMove: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
@@ -66,7 +73,7 @@ export default function SketchBoardCanvas({
       y: e.nativeEvent.offsetY,
     };
     const currentPositionPanned = substractPoints(currentPosition, pan);
-    if (mouseState.current.isPressed && mouseState.current.lastPosition != null) {
+    if (mouseState.current.leftButtonPressed && mouseState.current.lastPosition != null) {
       onUserDraw?.(mouseState.current.lastPosition, currentPositionPanned);
     }
     mouseState.current.lastPosition = currentPositionPanned;
