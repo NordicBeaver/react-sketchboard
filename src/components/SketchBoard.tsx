@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Sketch, Point, SketchLine, addPoints, substractPoints } from '../domain/Sketch';
 import { clamp } from '../util';
 import ColorPicker from './ColorPicker';
@@ -16,9 +16,18 @@ export default function SketchBoard() {
 
   const [viewport, setViewport] = useState<SketchBoardViewport>({ x: 0, y: 0, width: boardWidth, height: boardHeight });
   const [zoom, setZoom] = useState(1);
+  const prevZoom = useRef(1);
 
   useEffect(() => {
-    setViewport({ ...viewport, width: boardWidth / zoom, height: boardHeight / zoom });
+    const zoomUpdate = zoom / prevZoom.current;
+    const newWidth = viewport.width / zoomUpdate;
+    const newHeight = viewport.height / zoomUpdate;
+    const newX = viewport.x - (newWidth - viewport.width) / 2;
+    const newY = viewport.y - (newHeight - viewport.height) / 2;
+    const newViewport: SketchBoardViewport = { x: newX, y: newY, width: newWidth, height: newHeight };
+    setViewport(newViewport);
+
+    prevZoom.current = zoom;
   }, [zoom]);
 
   const xFromLocal = (x: number) => (x * viewport.width) / boardWidth + viewport.x;
