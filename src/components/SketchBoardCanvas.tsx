@@ -6,6 +6,7 @@ const canvasHeight = 400;
 
 export interface SketchBoardProps {
   sketch: Sketch;
+  pan: Point;
   onUserDraw?: (from: Point, to: Point) => void;
   onUserStartDrawing?: () => void;
   onUserFinishDrawing?: () => void;
@@ -16,8 +17,14 @@ interface MouseState {
   lastPosition: Point | null;
 }
 
+function translate(point: Point, translation: Point) {
+  const newPoint: Point = { x: point.x + translation.x, y: point.y + translation.y };
+  return newPoint;
+}
+
 export default function SketchBoardCanvas({
   sketch,
+  pan,
   onUserDraw,
   onUserStartDrawing,
   onUserFinishDrawing,
@@ -39,13 +46,15 @@ export default function SketchBoardCanvas({
         context.lineWidth = line.thickness;
         line.segments.forEach((segment) => {
           context.beginPath();
-          context.moveTo(segment.from.x, segment.from.y);
-          context.lineTo(segment.to.x, segment.to.y);
+          const fromPanned = translate(segment.from, pan);
+          const toPanned = translate(segment.to, pan);
+          context.moveTo(fromPanned.x, fromPanned.y);
+          context.lineTo(toPanned.x, toPanned.y);
           context.stroke();
         });
       });
     }
-  }, [sketch]);
+  }, [sketch, pan]);
 
   const handleMouseDown: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
     mouseState.current.isPressed = true;

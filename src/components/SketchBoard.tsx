@@ -9,6 +9,8 @@ export default function SketchBoard() {
   const [sketch, setSketch] = useState<Sketch>({
     lines: [],
   });
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
 
   const colors = ['000000', 'ff0000', '00ff00', '0000ff'];
   const thicknesses = [1, 2, 4, 8];
@@ -41,7 +43,11 @@ export default function SketchBoard() {
 
   return (
     <div>
-      <button onClick={hadnleUndoClick}>Undo</button>
+      <div>
+        <button onClick={hadnleUndoClick}>Undo</button>
+      </div>
+      <input type="range" min="-100" max="100" value={panX} onChange={(e) => setPanX(parseInt(e.target.value))}></input>
+      <input type="range" min="-100" max="100" value={panY} onChange={(e) => setPanY(parseInt(e.target.value))}></input>
       <ColorPicker options={colors} current={currentColor} onPick={(color) => setCurrentColor(color)}></ColorPicker>
       <ThicknessPicker
         options={thicknesses}
@@ -50,6 +56,7 @@ export default function SketchBoard() {
       ></ThicknessPicker>
       <SketchBoardCanvas
         sketch={sketch}
+        pan={{ x: panX, y: panY }}
         onUserDraw={handleUserDraw}
         onUserStartDrawing={handleUserStartDrawing}
       ></SketchBoardCanvas>
