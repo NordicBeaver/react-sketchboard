@@ -26,7 +26,6 @@ export default function SketchBoard() {
     const newY = viewport.y - (newHeight - viewport.height) / 2;
     const newViewport: SketchBoardViewport = { x: newX, y: newY, width: newWidth, height: newHeight };
     setViewport(newViewport);
-
     prevZoom.current = zoom;
   }, [zoom]);
 
@@ -74,6 +73,10 @@ export default function SketchBoard() {
     setViewport({ ...viewport, x: newVieportXLimited, y: newViewportYLimited });
   };
 
+  const handleUserZoom = (amount: number) => {
+    setZoom(zoom + amount);
+  };
+
   return (
     <div>
       <div>
@@ -118,6 +121,7 @@ export default function SketchBoard() {
         onUserDraw={handleUserDraw}
         onUserStartDrawing={handleUserStartDrawing}
         onUserPan={handleUserPan}
+        onUserZoom={handleUserZoom}
       ></SketchBoardCanvas>
     </div>
   );

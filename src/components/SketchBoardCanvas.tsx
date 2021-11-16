@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, VoidFunctionComponent } from 'react';
 import { Sketch, Point, addPoints, substractPoints, scalePoint } from '../domain/Sketch';
 
 const MOUSE_LEFT_BUTTON_CODE = 0;
@@ -20,6 +20,7 @@ export interface SketchBoardCanvasProps {
   onUserStartDrawing?: () => void;
   onUserFinishDrawing?: () => void;
   onUserPan?: (from: Point, to: Point) => void;
+  onUserZoom?: (amount: number) => void;
 }
 
 interface MouseState {
@@ -37,6 +38,7 @@ export default function SketchBoardCanvas({
   onUserStartDrawing,
   onUserFinishDrawing,
   onUserPan,
+  onUserZoom,
 }: SketchBoardCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseState = useRef<MouseState>({
@@ -75,6 +77,7 @@ export default function SketchBoardCanvas({
       context.clip();
       sketch.lines.forEach((line) => {
         context.strokeStyle = `#${line.color}`;
+        context.lineWidth = (line.thickness * (width / viewport.width + height / viewport.height)) / 2;
         context.beginPath();
         line.segments.forEach((segment) => {
           const fromLocal = pointToLocal(segment.from);
@@ -120,6 +123,25 @@ export default function SketchBoardCanvas({
     }
     mouseState.current.lastPosition = currentPosition;
   };
+
+  // We need to register onWheel this way because we need to set 'passive: false'.
+  // Otherwise preventDefault would not work.
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+        onUserZoom?.(-e.deltaY / 1000);
+      }
+    };
+    if (canvasRef.current != null) {
+      canvasRef.current.addEventListener('wheel', handleWheel, { passive: false });
+    }
+    return () => {
+      if (canvasRef.current != null) {
+        canvasRef.current.removeEventListener('wheel', handleWheel);
+      }
+    };
+  }, [canvasRef, onUserZoom]);
 
   return (
     <canvas
