@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Sketch, Point } from '../domain/Sketch';
+import { Sketch, Point, addPoints, substractPoints } from '../domain/Sketch';
 
 const canvasWidth = 400;
 const canvasHeight = 400;
@@ -17,11 +17,6 @@ interface MouseState {
   lastPosition: Point | null;
 }
 
-function translate(point: Point, translation: Point) {
-  const newPoint: Point = { x: point.x + translation.x, y: point.y + translation.y };
-  return newPoint;
-}
-
 export default function SketchBoardCanvas({
   sketch,
   pan,
@@ -36,7 +31,6 @@ export default function SketchBoardCanvas({
   });
 
   useEffect(() => {
-    console.log(sketch);
     if (canvasRef?.current != null) {
       const context = canvasRef.current.getContext('2d')!;
       context.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -46,8 +40,8 @@ export default function SketchBoardCanvas({
         context.lineWidth = line.thickness;
         line.segments.forEach((segment) => {
           context.beginPath();
-          const fromPanned = translate(segment.from, pan);
-          const toPanned = translate(segment.to, pan);
+          const fromPanned = addPoints(segment.from, pan);
+          const toPanned = addPoints(segment.to, pan);
           context.moveTo(fromPanned.x, fromPanned.y);
           context.lineTo(toPanned.x, toPanned.y);
           context.stroke();
@@ -71,10 +65,11 @@ export default function SketchBoardCanvas({
       x: e.nativeEvent.offsetX,
       y: e.nativeEvent.offsetY,
     };
+    const currentPositionPanned = substractPoints(currentPosition, pan);
     if (mouseState.current.isPressed && mouseState.current.lastPosition != null) {
-      onUserDraw?.(mouseState.current.lastPosition, currentPosition);
+      onUserDraw?.(mouseState.current.lastPosition, currentPositionPanned);
     }
-    mouseState.current.lastPosition = currentPosition;
+    mouseState.current.lastPosition = currentPositionPanned;
   };
 
   return (
