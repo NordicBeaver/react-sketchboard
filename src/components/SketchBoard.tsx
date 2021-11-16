@@ -70,9 +70,9 @@ export default function SketchBoard() {
 
   const handleUserPan = (from: Point, to: Point) => {
     const newViewportX = viewport.x - ((to.x - from.x) * viewport.width) / boardWidth;
-    const newVieportXLimited = clamp(newViewportX, -boardWidth / 2, boardWidth / 2);
+    const newVieportXLimited = clamp(newViewportX, -viewport.width / 2, boardWidth - viewport.width / 2);
     const newViewportY = viewport.y - ((to.y - from.y) * viewport.height) / boardHeight;
-    const newViewportYLimited = clamp(newViewportY, -boardHeight / 2, boardHeight / 2);
+    const newViewportYLimited = clamp(newViewportY, -viewport.height / 2, boardHeight - viewport.height / 2);
     setViewport({ ...viewport, x: newVieportXLimited, y: newViewportYLimited });
   };
 
