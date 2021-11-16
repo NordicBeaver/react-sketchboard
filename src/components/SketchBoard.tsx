@@ -9,6 +9,9 @@ import ThicknessPicker from './ThicknessPicker';
 const boardWidth = 400;
 const boardHeight = 400;
 
+const zoomMin = 0.5;
+const zoomMax = 4;
+
 export default function SketchBoard() {
   const [sketch, setSketch] = useState<Sketch>({
     lines: [],
@@ -74,7 +77,9 @@ export default function SketchBoard() {
   };
 
   const handleUserZoom = (amount: number) => {
-    setZoom(zoom + amount);
+    const newZoom = zoom + amount;
+    const newZoomLimited = clamp(newZoom, zoomMin, zoomMax);
+    setZoom(newZoomLimited);
   };
 
   return (
