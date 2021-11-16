@@ -41,12 +41,22 @@ export default function SketchBoardCanvas({
     if (canvasRef?.current != null) {
       const context = canvasRef.current.getContext('2d')!;
       context.clearRect(0, 0, canvasWidth, canvasHeight);
+
+      // Show gray background, where the drawing is not allowed
+      context.fillStyle = '#cccccc';
+      context.fillRect(-canvasWidth + pan.x, -canvasHeight + pan.y, canvasWidth * 3, canvasHeight * 3);
+      context.fillStyle = '#ffffff';
+      context.fillRect(0 + pan.x, 0 + pan.y, canvasWidth, canvasHeight);
+
+      context.save();
       context.lineCap = 'round';
+      context.rect(0 + pan.x, 0 + pan.y, canvasWidth, canvasHeight);
+      context.clip();
       sketch.lines.forEach((line) => {
         context.strokeStyle = `#${line.color}`;
         context.lineWidth = line.thickness;
+        context.beginPath();
         line.segments.forEach((segment) => {
-          context.beginPath();
           const fromPanned = addPoints(segment.from, pan);
           const toPanned = addPoints(segment.to, pan);
           context.moveTo(fromPanned.x, fromPanned.y);
@@ -54,6 +64,7 @@ export default function SketchBoardCanvas({
           context.stroke();
         });
       });
+      context.restore();
     }
   }, [sketch, pan]);
 
