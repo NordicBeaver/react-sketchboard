@@ -4,12 +4,18 @@ import { Sketch, Point, addPoints, substractPoints, scalePoint } from '../domain
 const MOUSE_LEFT_BUTTON_CODE = 0;
 const MOUSE_MIDDLE_BUTTON_CODE = 1;
 
+export interface SketchBoardViewport {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface SketchBoardCanvasProps {
   width: number;
   height: number;
   sketch: Sketch;
-  pan?: Point;
-  zoom?: number;
+  viewport?: SketchBoardViewport;
   onUserDraw?: (from: Point, to: Point) => void;
   onUserStartDrawing?: () => void;
   onUserFinishDrawing?: () => void;
@@ -26,8 +32,7 @@ export default function SketchBoardCanvas({
   width,
   height,
   sketch,
-  pan = { x: 0, y: 0 },
-  zoom = 1,
+  viewport = { x: 0, y: 0, width: width, height: height },
   onUserDraw,
   onUserStartDrawing,
   onUserFinishDrawing,
@@ -40,6 +45,19 @@ export default function SketchBoardCanvas({
     lastPosition: null,
   });
 
+  const xToLocal = (x: number) => ((x - viewport.x) * width) / viewport.width;
+  const yToLocal = (y: number) => ((y - viewport.y) * height) / viewport.height;
+  const widthToLocal = (w: number) => (w * width) / viewport.width;
+  const heightToLocal = (h: number) => (h * height) / viewport.height;
+
+  const pointToLocal = (point: Point) => {
+    const result: Point = {
+      x: ((point.x - viewport.x) * width) / viewport.width,
+      y: ((point.y - viewport.y) * height) / viewport.height,
+    };
+    return result;
+  };
+
   useEffect(() => {
     if (canvasRef?.current != null) {
       const context = canvasRef.current.getContext('2d')!;
@@ -47,33 +65,28 @@ export default function SketchBoardCanvas({
 
       // Show gray background, where the drawing is not allowed
       context.fillStyle = '#cccccc';
-      context.fillRect(-width + pan.x, -height + pan.y, width * 3, height * 3);
+      context.fillRect(xToLocal(-width), yToLocal(-height), widthToLocal(width * 3), heightToLocal(height * 3));
       context.fillStyle = '#ffffff';
-      context.fillRect(0 + pan.x, 0 + pan.y, width, height);
+      context.fillRect(xToLocal(0), yToLocal(0), widthToLocal(width), heightToLocal(height));
 
       context.save();
       context.lineCap = 'round';
-      context.rect(0 + pan.x, 0 + pan.y, width, height);
+      context.rect(xToLocal(0), yToLocal(0), widthToLocal(width), heightToLocal(height));
       context.clip();
       sketch.lines.forEach((line) => {
         context.strokeStyle = `#${line.color}`;
-        context.lineWidth = line.thickness * zoom;
         context.beginPath();
         line.segments.forEach((segment) => {
-          const fromPanned = addPoints(segment.from, pan);
-          const fromZoomed = scalePoint(fromPanned, zoom);
-          const toPanned = addPoints(segment.to, pan);
-          const toZoomed = scalePoint(toPanned, zoom);
-          context.moveTo(fromZoomed.x, fromZoomed.y);
-          context.lineTo(toZoomed.x, toZoomed.y);
+          const fromLocal = pointToLocal(segment.from);
+          const toLocal = pointToLocal(segment.to);
+          context.moveTo(fromLocal.x, fromLocal.y);
+          context.lineTo(toLocal.x, toLocal.y);
           context.stroke();
         });
       });
       context.restore();
-
-      const data = context.getImageData(0, 0, width, height);
     }
-  }, [sketch, pan]);
+  }, [sketch, viewport]);
 
   const handleMouseDown: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
     if (e.button === MOUSE_LEFT_BUTTON_CODE) {

@@ -1,9 +1,9 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sketch, Point, SketchLine, addPoints, substractPoints } from '../domain/Sketch';
 import { clamp } from '../util';
 import ColorPicker from './ColorPicker';
-import SketchBoardCanvas from './SketchBoardCanvas';
+import SketchBoardCanvas, { SketchBoardViewport } from './SketchBoardCanvas';
 import ThicknessPicker from './ThicknessPicker';
 
 const boardWidth = 400;
@@ -13,10 +13,18 @@ export default function SketchBoard() {
   const [sketch, setSketch] = useState<Sketch>({
     lines: [],
   });
-  const [panX, setPanX] = useState(0);
-  const [panY, setPanY] = useState(0);
 
+  const [viewport, setViewport] = useState<SketchBoardViewport>({ x: 0, y: 0, width: boardWidth, height: boardHeight });
   const [zoom, setZoom] = useState(1);
+
+  useEffect(() => {
+    setViewport({ ...viewport, width: boardWidth / zoom, height: boardHeight / zoom });
+  }, [zoom]);
+
+  const xFromLocal = (x: number) => (x * viewport.width) / boardWidth + viewport.x;
+  const yFromLocal = (y: number) => (y * viewport.height) / boardHeight + viewport.y;
+  const widthFromLocal = (w: number) => (w * viewport.width) / boardWidth;
+  const heightFromLocal = (h: number) => (h * viewport.height) / boardHeight;
 
   const colors = ['000000', 'ff0000', '00ff00', '0000ff'];
   const thicknesses = [1, 2, 4, 8];
@@ -31,10 +39,9 @@ export default function SketchBoard() {
   };
 
   const handleUserDraw = (from: Point, to: Point) => {
-    const pan: Point = { x: panX, y: panY };
-    const fromPanned = substractPoints(from, pan);
-    const toPanned = substractPoints(to, pan);
-    const newLineSegment = { from: fromPanned, to: toPanned };
+    const fromGlobal: Point = { x: xFromLocal(from.x), y: yFromLocal(from.y) };
+    const toGlobal: Point = { x: xFromLocal(to.x), y: yFromLocal(to.y) };
+    const newLineSegment = { from: fromGlobal, to: toGlobal };
     const lastLine = sketch.lines[sketch.lines.length - 1];
     const newLastLineSegments = [...lastLine.segments, newLineSegment];
     const newLastLine: SketchLine = { ...lastLine, segments: newLastLineSegments };
@@ -51,12 +58,11 @@ export default function SketchBoard() {
   };
 
   const handleUserPan = (from: Point, to: Point) => {
-    const newPanX = panX - from.x + to.x;
+    const newPanX = viewport.x - (to.x - from.x);
     const newPanXLimited = clamp(newPanX, -boardWidth / 2, boardWidth / 2);
-    const newPanY = panY - from.y + to.y;
+    const newPanY = viewport.y - (to.y - from.y);
     const newPanYLimited = clamp(newPanY, -boardHeight / 2, boardHeight / 2);
-    setPanX(newPanXLimited);
-    setPanY(newPanYLimited);
+    setViewport({ ...viewport, x: newPanXLimited, y: newPanYLimited });
   };
 
   return (
@@ -69,15 +75,15 @@ export default function SketchBoard() {
           type="range"
           min="-100"
           max="100"
-          value={panX}
-          onChange={(e) => setPanX(parseInt(e.target.value))}
+          value={viewport.x}
+          onChange={(e) => setViewport({ ...viewport, x: parseInt(e.target.value) })}
         ></input>
         <input
           type="range"
           min="-100"
           max="100"
-          value={panY}
-          onChange={(e) => setPanY(parseInt(e.target.value))}
+          value={viewport.y}
+          onChange={(e) => setViewport({ ...viewport, y: parseInt(e.target.value) })}
         ></input>
       </div>
       <div>
@@ -99,8 +105,7 @@ export default function SketchBoard() {
         width={boardWidth}
         height={boardHeight}
         sketch={sketch}
-        pan={{ x: panX, y: panY }}
-        zoom={zoom}
+        viewport={viewport}
         onUserDraw={handleUserDraw}
         onUserStartDrawing={handleUserStartDrawing}
         onUserPan={handleUserPan}
