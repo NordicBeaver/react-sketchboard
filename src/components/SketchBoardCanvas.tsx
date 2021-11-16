@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, VoidFunctionComponent } from 'react';
 import { Sketch, Point, addPoints, substractPoints, scalePoint } from '../domain/Sketch';
-
-const MOUSE_LEFT_BUTTON_CODE = 0;
-const MOUSE_MIDDLE_BUTTON_CODE = 1;
+import { useMouseDrawDetector } from '../hooks/useMouseDrawDetector';
 
 export interface SketchBoardViewport {
   x: number;
@@ -23,12 +21,6 @@ export interface SketchBoardCanvasProps {
   onUserZoom?: (amount: number) => void;
 }
 
-interface MouseState {
-  leftButtonPressed: boolean;
-  middleButtonPressed: boolean;
-  lastPosition: Point | null;
-}
-
 export default function SketchBoardCanvas({
   width,
   height,
@@ -41,10 +33,14 @@ export default function SketchBoardCanvas({
   onUserZoom,
 }: SketchBoardCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const mouseState = useRef<MouseState>({
-    leftButtonPressed: false,
-    middleButtonPressed: false,
-    lastPosition: null,
+
+  const { handleMouseDown, handleMouseUp, handleMouseMove } = useMouseDrawDetector({
+    canvasRef: canvasRef,
+    onUserStartDrawing: onUserStartDrawing,
+    onUserFinishDrawing: onUserFinishDrawing,
+    onUserDraw: onUserDraw,
+    onUserPan: onUserPan,
+    onUserZoom: onUserZoom,
   });
 
   const xToLocal = (x: number) => ((x - viewport.x) * width) / viewport.width;
@@ -90,58 +86,6 @@ export default function SketchBoardCanvas({
       context.restore();
     }
   }, [sketch, viewport]);
-
-  const handleMouseDown: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
-    if (e.button === MOUSE_LEFT_BUTTON_CODE) {
-      mouseState.current.leftButtonPressed = true;
-      onUserStartDrawing?.({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
-    } else if (e.button === MOUSE_MIDDLE_BUTTON_CODE) {
-      e.preventDefault();
-      mouseState.current.middleButtonPressed = true;
-    }
-  };
-
-  const handleMouseUp: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
-    if (e.button === MOUSE_LEFT_BUTTON_CODE) {
-      mouseState.current.leftButtonPressed = false;
-      onUserFinishDrawing?.({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
-    } else if (e.button === MOUSE_MIDDLE_BUTTON_CODE) {
-      mouseState.current.middleButtonPressed = false;
-    }
-  };
-
-  const handleMouseMove: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
-    const currentPosition: Point = {
-      x: e.nativeEvent.offsetX,
-      y: e.nativeEvent.offsetY,
-    };
-    if (mouseState.current.leftButtonPressed && mouseState.current.lastPosition != null) {
-      onUserDraw?.(mouseState.current.lastPosition, currentPosition);
-    }
-    if (mouseState.current.middleButtonPressed && mouseState.current.lastPosition != null) {
-      onUserPan?.(mouseState.current.lastPosition, currentPosition);
-    }
-    mouseState.current.lastPosition = currentPosition;
-  };
-
-  // We need to register onWheel this way because we need to set 'passive: false'.
-  // Otherwise preventDefault would not work.
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      if (e.ctrlKey) {
-        e.preventDefault();
-        onUserZoom?.(-e.deltaY / 1000);
-      }
-    };
-    if (canvasRef.current != null) {
-      canvasRef.current.addEventListener('wheel', handleWheel, { passive: false });
-    }
-    return () => {
-      if (canvasRef.current != null) {
-        canvasRef.current.removeEventListener('wheel', handleWheel);
-      }
-    };
-  }, [canvasRef, onUserZoom]);
 
   return (
     <canvas
