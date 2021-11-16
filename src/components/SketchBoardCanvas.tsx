@@ -4,8 +4,8 @@ import { Sketch, Point, addPoints, substractPoints } from '../domain/Sketch';
 const canvasWidth = 400;
 const canvasHeight = 400;
 
-const LEFT_MOUSE_BUTTON_CODE = 0;
-const MIDDLE_MOUSE_BUTTON_CODE = 1;
+const MOUSE_LEFT_BUTTON_CODE = 0;
+const MOUSE_MIDDLE_BUTTON_CODE = 1;
 
 export interface SketchBoardProps {
   sketch: Sketch;
@@ -13,10 +13,12 @@ export interface SketchBoardProps {
   onUserDraw?: (from: Point, to: Point) => void;
   onUserStartDrawing?: () => void;
   onUserFinishDrawing?: () => void;
+  onUserPan?: (from: Point, to: Point) => void;
 }
 
 interface MouseState {
   leftButtonPressed: boolean;
+  middleButtonPressed: boolean;
   lastPosition: Point | null;
 }
 
@@ -26,10 +28,12 @@ export default function SketchBoardCanvas({
   onUserDraw,
   onUserStartDrawing,
   onUserFinishDrawing,
+  onUserPan,
 }: SketchBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseState = useRef<MouseState>({
     leftButtonPressed: false,
+    middleButtonPressed: false,
     lastPosition: null,
   });
 
@@ -54,16 +58,21 @@ export default function SketchBoardCanvas({
   }, [sketch, pan]);
 
   const handleMouseDown: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
-    if (e.button === LEFT_MOUSE_BUTTON_CODE) {
+    if (e.button === MOUSE_LEFT_BUTTON_CODE) {
       mouseState.current.leftButtonPressed = true;
       onUserStartDrawing?.();
+    } else if (e.button === MOUSE_MIDDLE_BUTTON_CODE) {
+      e.preventDefault();
+      mouseState.current.middleButtonPressed = true;
     }
   };
 
   const handleMouseUp: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
-    if (e.button === LEFT_MOUSE_BUTTON_CODE) {
+    if (e.button === MOUSE_LEFT_BUTTON_CODE) {
       mouseState.current.leftButtonPressed = false;
       onUserFinishDrawing?.();
+    } else if (e.button === MOUSE_MIDDLE_BUTTON_CODE) {
+      mouseState.current.middleButtonPressed = false;
     }
   };
 
@@ -72,11 +81,13 @@ export default function SketchBoardCanvas({
       x: e.nativeEvent.offsetX,
       y: e.nativeEvent.offsetY,
     };
-    const currentPositionPanned = substractPoints(currentPosition, pan);
     if (mouseState.current.leftButtonPressed && mouseState.current.lastPosition != null) {
-      onUserDraw?.(mouseState.current.lastPosition, currentPositionPanned);
+      onUserDraw?.(mouseState.current.lastPosition, currentPosition);
     }
-    mouseState.current.lastPosition = currentPositionPanned;
+    if (mouseState.current.middleButtonPressed && mouseState.current.lastPosition != null) {
+      onUserPan?.(mouseState.current.lastPosition, currentPosition);
+    }
+    mouseState.current.lastPosition = currentPosition;
   };
 
   return (

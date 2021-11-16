@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState } from 'react';
-import { Sketch, Point, SketchLine } from '../domain/Sketch';
+import { Sketch, Point, SketchLine, addPoints, substractPoints } from '../domain/Sketch';
 import ColorPicker from './ColorPicker';
 import SketchBoardCanvas from './SketchBoardCanvas';
 import ThicknessPicker from './ThicknessPicker';
@@ -25,7 +25,10 @@ export default function SketchBoard() {
   };
 
   const handleUserDraw = (from: Point, to: Point) => {
-    const newLineSegment = { from: from, to: to };
+    const pan: Point = { x: panX, y: panY };
+    const fromPanned = substractPoints(from, pan);
+    const toPanned = substractPoints(to, pan);
+    const newLineSegment = { from: fromPanned, to: toPanned };
     const lastLine = sketch.lines[sketch.lines.length - 1];
     const newLastLineSegments = [...lastLine.segments, newLineSegment];
     const newLastLine: SketchLine = { ...lastLine, segments: newLastLineSegments };
@@ -39,6 +42,11 @@ export default function SketchBoard() {
     const newLines = [...sketch.lines, newLine];
     const newSketch = { ...sketch, lines: newLines };
     setSketch(newSketch);
+  };
+
+  const handleUserPan = (from: Point, to: Point) => {
+    setPanX(panX - from.x + to.x);
+    setPanY(panY - from.y + to.y);
   };
 
   return (
@@ -59,6 +67,7 @@ export default function SketchBoard() {
         pan={{ x: panX, y: panY }}
         onUserDraw={handleUserDraw}
         onUserStartDrawing={handleUserStartDrawing}
+        onUserPan={handleUserPan}
       ></SketchBoardCanvas>
     </div>
   );
