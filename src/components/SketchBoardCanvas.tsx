@@ -1,23 +1,8 @@
 import React, { useEffect, useRef } from 'react';
+import { Sketch, Point } from '../domain/Sketch';
 
 const canvasWidth = 400;
 const canvasHeight = 400;
-
-export interface Point {
-  x: number;
-  y: number;
-}
-
-export interface SketchLine {
-  from: Point;
-  to: Point;
-  thickness: number;
-  color: string;
-}
-
-export interface Sketch {
-  lines: SketchLine[];
-}
 
 export interface SketchBoardProps {
   sketch: Sketch;

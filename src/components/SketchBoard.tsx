@@ -1,7 +1,8 @@
 import React from 'react';
 import { useState } from 'react';
+import { Sketch, Point, SketchLine } from '../domain/Sketch';
 import ColorPicker from './ColorPicker';
-import SketchBoardCanvas, { Point, Sketch, SketchLine } from './SketchBoardCanvas';
+import SketchBoardCanvas from './SketchBoardCanvas';
 import ThicknessPicker from './ThicknessPicker';
 
 export default function SketchBoard() {
