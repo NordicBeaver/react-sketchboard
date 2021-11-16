@@ -19,6 +19,14 @@ export function substractPoints(p1: Point, p2: Point) {
   return result;
 }
 
+export function scalePoint(point: Point, scalar: number) {
+  const result: Point = {
+    x: point.x * scalar,
+    y: point.y * scalar,
+  };
+  return result;
+}
+
 export interface SketchLineSegment {
   from: Point;
   to: Point;

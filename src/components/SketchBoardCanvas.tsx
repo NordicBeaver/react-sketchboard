@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Sketch, Point, addPoints, substractPoints } from '../domain/Sketch';
+import { Sketch, Point, addPoints, substractPoints, scalePoint } from '../domain/Sketch';
 
 const MOUSE_LEFT_BUTTON_CODE = 0;
 const MOUSE_MIDDLE_BUTTON_CODE = 1;
@@ -8,7 +8,8 @@ export interface SketchBoardCanvasProps {
   width: number;
   height: number;
   sketch: Sketch;
-  pan: Point;
+  pan?: Point;
+  zoom?: number;
   onUserDraw?: (from: Point, to: Point) => void;
   onUserStartDrawing?: () => void;
   onUserFinishDrawing?: () => void;
@@ -25,7 +26,8 @@ export default function SketchBoardCanvas({
   width,
   height,
   sketch,
-  pan,
+  pan = { x: 0, y: 0 },
+  zoom = 1,
   onUserDraw,
   onUserStartDrawing,
   onUserFinishDrawing,
@@ -55,13 +57,15 @@ export default function SketchBoardCanvas({
       context.clip();
       sketch.lines.forEach((line) => {
         context.strokeStyle = `#${line.color}`;
-        context.lineWidth = line.thickness;
+        context.lineWidth = line.thickness * zoom;
         context.beginPath();
         line.segments.forEach((segment) => {
           const fromPanned = addPoints(segment.from, pan);
+          const fromZoomed = scalePoint(fromPanned, zoom);
           const toPanned = addPoints(segment.to, pan);
-          context.moveTo(fromPanned.x, fromPanned.y);
-          context.lineTo(toPanned.x, toPanned.y);
+          const toZoomed = scalePoint(toPanned, zoom);
+          context.moveTo(fromZoomed.x, fromZoomed.y);
+          context.lineTo(toZoomed.x, toZoomed.y);
           context.stroke();
         });
       });
