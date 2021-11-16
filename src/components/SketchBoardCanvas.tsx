@@ -17,8 +17,8 @@ export interface SketchBoardCanvasProps {
   sketch: Sketch;
   viewport?: SketchBoardViewport;
   onUserDraw?: (from: Point, to: Point) => void;
-  onUserStartDrawing?: () => void;
-  onUserFinishDrawing?: () => void;
+  onUserStartDrawing?: (point: Point) => void;
+  onUserFinishDrawing?: (point: Point) => void;
   onUserPan?: (from: Point, to: Point) => void;
   onUserZoom?: (amount: number) => void;
 }
@@ -94,7 +94,7 @@ export default function SketchBoardCanvas({
   const handleMouseDown: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
     if (e.button === MOUSE_LEFT_BUTTON_CODE) {
       mouseState.current.leftButtonPressed = true;
-      onUserStartDrawing?.();
+      onUserStartDrawing?.({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
     } else if (e.button === MOUSE_MIDDLE_BUTTON_CODE) {
       e.preventDefault();
       mouseState.current.middleButtonPressed = true;
@@ -104,7 +104,7 @@ export default function SketchBoardCanvas({
   const handleMouseUp: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
     if (e.button === MOUSE_LEFT_BUTTON_CODE) {
       mouseState.current.leftButtonPressed = false;
-      onUserFinishDrawing?.();
+      onUserFinishDrawing?.({ x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY });
     } else if (e.button === MOUSE_MIDDLE_BUTTON_CODE) {
       mouseState.current.middleButtonPressed = false;
     }

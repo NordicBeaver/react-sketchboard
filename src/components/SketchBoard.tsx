@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { Sketch, Point, SketchLine, addPoints, substractPoints } from '../domain/Sketch';
+import { Sketch, Point, SketchLine, addPoints, substractPoints, SketchLineSegment } from '../domain/Sketch';
 import { clamp } from '../util';
 import ColorPicker from './ColorPicker';
 import SketchBoardCanvas, { SketchBoardViewport } from './SketchBoardCanvas';
@@ -61,11 +61,28 @@ export default function SketchBoard() {
     setSketch(newSketch);
   };
 
-  const handleUserStartDrawing = () => {
+  const handleUserStartDrawing = (point: Point) => {
     const newLine: SketchLine = { segments: [], thickness: currentThickness, color: currentColor };
     const newLines = [...sketch.lines, newLine];
     const newSketch = { ...sketch, lines: newLines };
     setSketch(newSketch);
+  };
+
+  const handleUserFinishDrawing = (point: Point) => {
+    // If on drawing finish last line has not segments, add a 'dot' to it.
+    if (sketch.lines.length > 0) {
+      const lastLine = sketch.lines[sketch.lines.length - 1];
+      if (lastLine.segments.length == 0) {
+        const newSegment: SketchLineSegment = {
+          from: { x: xFromLocal(point.x), y: yFromLocal(point.y) },
+          to: { x: xFromLocal(point.x), y: yFromLocal(point.y) },
+        };
+        const newLastLine: SketchLine = { ...lastLine, segments: [newSegment] };
+        const newLines = [...sketch.lines, newLastLine];
+        const newSketch = { ...sketch, lines: newLines };
+        setSketch(newSketch);
+      }
+    }
   };
 
   const handleUserPan = (from: Point, to: Point) => {
@@ -125,6 +142,7 @@ export default function SketchBoard() {
         viewport={viewport}
         onUserDraw={handleUserDraw}
         onUserStartDrawing={handleUserStartDrawing}
+        onUserFinishDrawing={handleUserFinishDrawing}
         onUserPan={handleUserPan}
         onUserZoom={handleUserZoom}
       ></SketchBoardCanvas>
