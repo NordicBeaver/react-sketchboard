@@ -23,7 +23,17 @@ export default function SketchBoard() {
   };
 
   const handleUserDraw = (from: Point, to: Point) => {
-    const newLine: SketchLine = { from: from, to: to, thickness: currentThickness, color: currentColor };
+    const newLineSegment = { from: from, to: to };
+    const lastLine = sketch.lines[sketch.lines.length - 1];
+    const newLastLineSegments = [...lastLine.segments, newLineSegment];
+    const newLastLine: SketchLine = { ...lastLine, segments: newLastLineSegments };
+    const newLines = [...sketch.lines.slice(0, -1), newLastLine];
+    const newSketch = { ...sketch, lines: newLines };
+    setSketch(newSketch);
+  };
+
+  const handleUserStartDrawing = () => {
+    const newLine: SketchLine = { segments: [], thickness: currentThickness, color: currentColor };
     const newLines = [...sketch.lines, newLine];
     const newSketch = { ...sketch, lines: newLines };
     setSketch(newSketch);
@@ -38,7 +48,11 @@ export default function SketchBoard() {
         current={currentThickness}
         onPick={(thickness) => setCurrentThickness(thickness)}
       ></ThicknessPicker>
-      <SketchBoardCanvas sketch={sketch} onUserDraw={handleUserDraw}></SketchBoardCanvas>
+      <SketchBoardCanvas
+        sketch={sketch}
+        onUserDraw={handleUserDraw}
+        onUserStartDrawing={handleUserStartDrawing}
+      ></SketchBoardCanvas>
     </div>
   );
 }

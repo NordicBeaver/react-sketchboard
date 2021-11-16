@@ -7,6 +7,8 @@ const canvasHeight = 400;
 export interface SketchBoardProps {
   sketch: Sketch;
   onUserDraw?: (from: Point, to: Point) => void;
+  onUserStartDrawing?: () => void;
+  onUserFinishDrawing?: () => void;
 }
 
 interface MouseState {
@@ -14,7 +16,12 @@ interface MouseState {
   lastPosition: Point | null;
 }
 
-export default function SketchBoardCanvas({ sketch, onUserDraw }: SketchBoardProps) {
+export default function SketchBoardCanvas({
+  sketch,
+  onUserDraw,
+  onUserStartDrawing,
+  onUserFinishDrawing,
+}: SketchBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseState = useRef<MouseState>({
     isPressed: false,
@@ -22,27 +29,32 @@ export default function SketchBoardCanvas({ sketch, onUserDraw }: SketchBoardPro
   });
 
   useEffect(() => {
+    console.log(sketch);
     if (canvasRef?.current != null) {
       const context = canvasRef.current.getContext('2d')!;
       context.clearRect(0, 0, canvasWidth, canvasHeight);
       context.lineCap = 'round';
       sketch.lines.forEach((line) => {
-        context.beginPath();
         context.strokeStyle = `#${line.color}`;
         context.lineWidth = line.thickness;
-        context.moveTo(line.from.x, line.from.y);
-        context.lineTo(line.to.x, line.to.y);
-        context.stroke();
+        line.segments.forEach((segment) => {
+          context.beginPath();
+          context.moveTo(segment.from.x, segment.from.y);
+          context.lineTo(segment.to.x, segment.to.y);
+          context.stroke();
+        });
       });
     }
   }, [sketch]);
 
   const handleMouseDown: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
     mouseState.current.isPressed = true;
+    onUserStartDrawing?.();
   };
 
   const handleMouseUp: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
     mouseState.current.isPressed = false;
+    onUserFinishDrawing?.();
   };
 
   const handleMouseMove: React.MouseEventHandler<HTMLCanvasElement> = (e) => {

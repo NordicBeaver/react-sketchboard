@@ -3,9 +3,13 @@ export interface Point {
   y: number;
 }
 
-export interface SketchLine {
+export interface SketchLineSegment {
   from: Point;
   to: Point;
+}
+
+export interface SketchLine {
+  segments: SketchLineSegment[];
   thickness: number;
   color: string;
 }
