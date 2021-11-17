@@ -122,7 +122,7 @@ export default function SketchBoard() {
 
   const handleUserZoom = useCallback((amount: number) => {
     setZoom((oldZoom) => {
-      const newZoom = oldZoom + amount;
+      const newZoom = oldZoom * amount;
       const newZoomLimited = clamp(newZoom, zoomMin, zoomMax);
       return newZoomLimited;
     });

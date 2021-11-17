@@ -87,7 +87,8 @@ export function useMouseDrawDetector({
       const handleWheel = (e: WheelEvent) => {
         if (e.ctrlKey) {
           e.preventDefault();
-          onUserZoom?.(-e.deltaY / 1000);
+          const zoom = 1 - e.deltaY / 1000;
+          onUserZoom?.(zoom);
         }
       };
       canvas.addEventListener('wheel', handleWheel, { passive: false });

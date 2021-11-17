@@ -49,6 +49,8 @@ export default function SketchBoardCanvas({
     onUserStartDrawing: onUserStartDrawing,
     onUserFinishDrawing: onUserFinishDrawing,
     onUserDraw: onUserDraw,
+    onUserPan: onUserPan,
+    onUserZoom: onUserZoom,
   });
 
   useEffect(() => {

@@ -27,6 +27,19 @@ export function scalePoint(point: Point, scalar: number) {
   return result;
 }
 
+export function distance(p1: Point, p2: Point) {
+  const result = Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+  return result;
+}
+
+export function middle(p1: Point, p2: Point) {
+  const result: Point = {
+    x: p1.x + p2.x / 2,
+    y: p1.y + p2.y / 2,
+  };
+  return result;
+}
+
 export interface SketchLineSegment {
   from: Point;
   to: Point;
