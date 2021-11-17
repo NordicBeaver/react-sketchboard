@@ -152,5 +152,5 @@ export function useTouchDrawDetector({
         canvas.removeEventListener('touchmove', handleTouchMove);
       };
     }
-  }, [canvasRef, onUserDraw, onUserZoom]);
+  }, [canvasRef, onUserDraw, onUserPan, onUserZoom]);
 }
