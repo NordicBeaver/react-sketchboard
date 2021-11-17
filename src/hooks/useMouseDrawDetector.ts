@@ -82,20 +82,19 @@ export function useMouseDrawDetector({
   // We need to register onWheel this way because we need to set 'passive: false'.
   // Otherwise preventDefault would not work.
   useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      if (e.ctrlKey) {
-        e.preventDefault();
-        onUserZoom?.(-e.deltaY / 1000);
-      }
-    };
-    if (canvasRef.current != null) {
-      canvasRef.current.addEventListener('wheel', handleWheel, { passive: false });
+    const canvas = canvasRef.current;
+    if (canvas != null) {
+      const handleWheel = (e: WheelEvent) => {
+        if (e.ctrlKey) {
+          e.preventDefault();
+          onUserZoom?.(-e.deltaY / 1000);
+        }
+      };
+      canvas.addEventListener('wheel', handleWheel, { passive: false });
+      return () => {
+        canvas.removeEventListener('wheel', handleWheel);
+      };
     }
-    return () => {
-      if (canvasRef.current != null) {
-        canvasRef.current.removeEventListener('wheel', handleWheel);
-      }
-    };
   }, [canvasRef, onUserZoom]);
 
   return { handleMouseDown, handleMouseUp, handleMouseMove };

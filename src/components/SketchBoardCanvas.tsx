@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, VoidFunctionComponent } from 'react';
-import { Sketch, Point, addPoints, substractPoints, scalePoint } from '../domain/Sketch';
+import React, { useEffect, useRef } from 'react';
+import { Point, Sketch } from '../domain/Sketch';
 import { useMouseDrawDetector } from '../hooks/useMouseDrawDetector';
 
 export interface SketchBoardViewport {
@@ -43,20 +43,20 @@ export default function SketchBoardCanvas({
     onUserZoom: onUserZoom,
   });
 
-  const xToLocal = (x: number) => ((x - viewport.x) * width) / viewport.width;
-  const yToLocal = (y: number) => ((y - viewport.y) * height) / viewport.height;
-  const widthToLocal = (w: number) => (w * width) / viewport.width;
-  const heightToLocal = (h: number) => (h * height) / viewport.height;
-
-  const pointToLocal = (point: Point) => {
-    const result: Point = {
-      x: ((point.x - viewport.x) * width) / viewport.width,
-      y: ((point.y - viewport.y) * height) / viewport.height,
-    };
-    return result;
-  };
-
   useEffect(() => {
+    const xToLocal = (x: number) => ((x - viewport.x) * width) / viewport.width;
+    const yToLocal = (y: number) => ((y - viewport.y) * height) / viewport.height;
+    const widthToLocal = (w: number) => (w * width) / viewport.width;
+    const heightToLocal = (h: number) => (h * height) / viewport.height;
+
+    const pointToLocal = (point: Point) => {
+      const result: Point = {
+        x: ((point.x - viewport.x) * width) / viewport.width,
+        y: ((point.y - viewport.y) * height) / viewport.height,
+      };
+      return result;
+    };
+
     if (canvasRef?.current != null) {
       const context = canvasRef.current.getContext('2d')!;
       context.clearRect(0, 0, width, height);
@@ -85,7 +85,7 @@ export default function SketchBoardCanvas({
       });
       context.restore();
     }
-  }, [sketch, viewport]);
+  }, [height, sketch, viewport, width]);
 
   return (
     <canvas

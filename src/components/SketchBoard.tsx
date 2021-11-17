@@ -30,7 +30,7 @@ export default function SketchBoard() {
     const newViewport: SketchBoardViewport = { x: newX, y: newY, width: newWidth, height: newHeight };
     setViewport(newViewport);
     prevZoom.current = zoom;
-  }, [zoom]);
+  }, [zoom, viewport]);
 
   const xFromLocal = (x: number) => (x * viewport.width) / boardWidth + viewport.x;
   const yFromLocal = (y: number) => (y * viewport.height) / boardHeight + viewport.y;
