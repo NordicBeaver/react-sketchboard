@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Point, Sketch } from '../domain/Sketch';
 import { useMouseDrawDetector } from '../hooks/useMouseDrawDetector';
+import { useTouchDrawDetector } from '../hooks/useTouchDrawDetector';
 
 export interface SketchBoardViewport {
   x: number;
@@ -43,6 +44,13 @@ export default function SketchBoardCanvas({
     onUserZoom: onUserZoom,
   });
 
+  useTouchDrawDetector({
+    canvasRef: canvasRef,
+    onUserStartDrawing: onUserStartDrawing,
+    onUserFinishDrawing: onUserFinishDrawing,
+    onUserDraw: onUserDraw,
+  });
+
   useEffect(() => {
     const xToLocal = (x: number) => ((x - viewport.x) * width) / viewport.width;
     const yToLocal = (y: number) => ((y - viewport.y) * height) / viewport.height;
@@ -74,8 +82,8 @@ export default function SketchBoardCanvas({
       sketch.lines.forEach((line) => {
         context.strokeStyle = `#${line.color}`;
         context.lineWidth = (line.thickness * (width / viewport.width + height / viewport.height)) / 2;
-        context.beginPath();
         line.segments.forEach((segment) => {
+          context.beginPath();
           const fromLocal = pointToLocal(segment.from);
           const toLocal = pointToLocal(segment.to);
           context.moveTo(fromLocal.x, fromLocal.y);
