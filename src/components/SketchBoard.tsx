@@ -23,14 +23,16 @@ export default function SketchBoard() {
 
   useEffect(() => {
     const zoomUpdate = zoom / prevZoom.current;
-    const newWidth = viewport.width / zoomUpdate;
-    const newHeight = viewport.height / zoomUpdate;
-    const newX = viewport.x - (newWidth - viewport.width) / 2;
-    const newY = viewport.y - (newHeight - viewport.height) / 2;
-    const newViewport: SketchBoardViewport = { x: newX, y: newY, width: newWidth, height: newHeight };
-    setViewport(newViewport);
     prevZoom.current = zoom;
-  }, [zoom, viewport]);
+    setViewport((oldViewport) => {
+      const newWidth = oldViewport.width / zoomUpdate;
+      const newHeight = oldViewport.height / zoomUpdate;
+      const newX = oldViewport.x - (newWidth - oldViewport.width) / 2;
+      const newY = oldViewport.y - (newHeight - oldViewport.height) / 2;
+      const newViewport: SketchBoardViewport = { x: newX, y: newY, width: newWidth, height: newHeight };
+      return newViewport;
+    });
+  }, [zoom]);
 
   const xFromLocal = (x: number) => (x * viewport.width) / boardWidth + viewport.x;
   const yFromLocal = (y: number) => (y * viewport.height) / boardHeight + viewport.y;
