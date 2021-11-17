@@ -1,8 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { Point } from '../domain/Sketch';
 
+// For some reason mouse button codes are different whether we're checking
+// the .button property or the .buttons property of the event.
+
 const MOUSE_LEFT_BUTTON_CODE = 0;
 const MOUSE_MIDDLE_BUTTON_CODE = 1;
+
+const MOUSE_LEFT_BUTTONS_CODE = 1;
+const MOUSE_MIDDLE_BUTTONS_CODE = 4;
 
 interface MouseState {
   leftButtonPressed: boolean;
@@ -52,6 +58,14 @@ export function useMouseDrawDetector({
   };
 
   const handleMouseMove: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
+    // Check if a mouse button was unpressed outside of the element
+    if ((e.buttons & MOUSE_LEFT_BUTTONS_CODE) === 0) {
+      mouseState.current.leftButtonPressed = false;
+    }
+    if ((e.buttons & MOUSE_MIDDLE_BUTTONS_CODE) === 0) {
+      mouseState.current.middleButtonPressed = false;
+    }
+
     const currentPosition: Point = {
       x: e.nativeEvent.offsetX,
       y: e.nativeEvent.offsetY,
