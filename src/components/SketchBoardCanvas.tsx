@@ -82,14 +82,15 @@ export default function SketchBoardCanvas({
       sketch.lines.forEach((line) => {
         context.strokeStyle = `#${line.color}`;
         context.lineWidth = (line.thickness * (width / viewport.width + height / viewport.height)) / 2;
+        context.beginPath();
         line.segments.forEach((segment) => {
-          context.beginPath();
           const fromLocal = pointToLocal(segment.from);
           const toLocal = pointToLocal(segment.to);
           context.moveTo(fromLocal.x, fromLocal.y);
           context.lineTo(toLocal.x, toLocal.y);
           context.stroke();
         });
+        context.closePath();
       });
       context.restore();
     }
