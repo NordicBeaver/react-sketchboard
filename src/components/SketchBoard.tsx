@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { Sketch, Point, SketchLine, addPoints, substractPoints, SketchLineSegment } from '../domain/Sketch';
 import { clamp } from '../util';
@@ -34,8 +34,8 @@ export default function SketchBoard() {
     });
   }, [zoom]);
 
-  const xFromLocal = (x: number) => (x * viewport.width) / boardWidth + viewport.x;
-  const yFromLocal = (y: number) => (y * viewport.height) / boardHeight + viewport.y;
+  const xFromLocal = useCallback((x: number) => (x * viewport.width) / boardWidth + viewport.x, [viewport]);
+  const yFromLocal = useCallback((y: number) => (y * viewport.height) / boardHeight + viewport.y, [viewport]);
   const widthFromLocal = (w: number) => (w * viewport.width) / boardWidth;
   const heightFromLocal = (h: number) => (h * viewport.height) / boardHeight;
 
@@ -45,61 +45,88 @@ export default function SketchBoard() {
   const [currentColor, setCurrentColor] = useState('000000');
   const [currentThickness, setCurrentThickness] = useState(2);
 
-  const hadnleUndoClick = () => {
-    const newLines = sketch.lines.slice(0, -1);
-    const newSketch: Sketch = { ...sketch, lines: newLines };
-    setSketch(newSketch);
-  };
+  const hadnleUndoClick = useCallback(() => {
+    setSketch((oldSketch) => {
+      const newLines = oldSketch.lines.slice(0, -1);
+      const newSketch: Sketch = { ...oldSketch, lines: newLines };
+      return newSketch;
+    });
+  }, []);
 
-  const handleUserDraw = (from: Point, to: Point) => {
-    const fromGlobal: Point = { x: xFromLocal(from.x), y: yFromLocal(from.y) };
-    const toGlobal: Point = { x: xFromLocal(to.x), y: yFromLocal(to.y) };
-    const newLineSegment = { from: fromGlobal, to: toGlobal };
-    const lastLine = sketch.lines[sketch.lines.length - 1];
-    const newLastLineSegments = [...lastLine.segments, newLineSegment];
-    const newLastLine: SketchLine = { ...lastLine, segments: newLastLineSegments };
-    const newLines = [...sketch.lines.slice(0, -1), newLastLine];
-    const newSketch = { ...sketch, lines: newLines };
-    setSketch(newSketch);
-  };
+  const handleUserDraw = useCallback(
+    (from: Point, to: Point) => {
+      setSketch((oldSketch) => {
+        const fromGlobal: Point = { x: xFromLocal(from.x), y: yFromLocal(from.y) };
+        const toGlobal: Point = { x: xFromLocal(to.x), y: yFromLocal(to.y) };
+        const newLineSegment = { from: fromGlobal, to: toGlobal };
+        const lastLine = oldSketch.lines[oldSketch.lines.length - 1];
+        const newLastLineSegments = [...lastLine.segments, newLineSegment];
+        const newLastLine: SketchLine = { ...lastLine, segments: newLastLineSegments };
+        const newLines = [...oldSketch.lines.slice(0, -1), newLastLine];
+        const newSketch = { ...oldSketch, lines: newLines };
+        return newSketch;
+      });
+    },
+    [xFromLocal, yFromLocal]
+  );
 
-  const handleUserStartDrawing = (point: Point) => {
-    const newLine: SketchLine = { segments: [], thickness: currentThickness, color: currentColor };
-    const newLines = [...sketch.lines, newLine];
-    const newSketch = { ...sketch, lines: newLines };
-    setSketch(newSketch);
-  };
+  const handleUserStartDrawing = useCallback(
+    (point: Point) => {
+      setSketch((oldSketch) => {
+        const newLine: SketchLine = { segments: [], thickness: currentThickness, color: currentColor };
+        const newLines = [...oldSketch.lines, newLine];
+        const newSketch = { ...oldSketch, lines: newLines };
+        return newSketch;
+      });
+    },
+    [currentColor, currentThickness]
+  );
 
-  const handleUserFinishDrawing = (point: Point) => {
-    // If on drawing finish last line has not segments, add a 'dot' to it.
-    if (sketch.lines.length > 0) {
-      const lastLine = sketch.lines[sketch.lines.length - 1];
-      if (lastLine.segments.length == 0) {
-        const newSegment: SketchLineSegment = {
-          from: { x: xFromLocal(point.x), y: yFromLocal(point.y) },
-          to: { x: xFromLocal(point.x), y: yFromLocal(point.y) },
-        };
-        const newLastLine: SketchLine = { ...lastLine, segments: [newSegment] };
-        const newLines = [...sketch.lines, newLastLine];
-        const newSketch = { ...sketch, lines: newLines };
-        setSketch(newSketch);
-      }
-    }
-  };
+  const handleUserFinishDrawing = useCallback(
+    (point: Point) => {
+      setSketch((oldSketch) => {
+        if (oldSketch.lines.length > 0) {
+          const lastLine = oldSketch.lines[oldSketch.lines.length - 1];
+          if (lastLine.segments.length == 0) {
+            // If on drawing finish last line has not segments, add a 'dot' to it.
 
-  const handleUserPan = (from: Point, to: Point) => {
-    const newViewportX = viewport.x - ((to.x - from.x) * viewport.width) / boardWidth;
-    const newVieportXLimited = clamp(newViewportX, -viewport.width / 2, boardWidth - viewport.width / 2);
-    const newViewportY = viewport.y - ((to.y - from.y) * viewport.height) / boardHeight;
-    const newViewportYLimited = clamp(newViewportY, -viewport.height / 2, boardHeight - viewport.height / 2);
-    setViewport({ ...viewport, x: newVieportXLimited, y: newViewportYLimited });
-  };
+            const newSegment: SketchLineSegment = {
+              from: { x: xFromLocal(point.x), y: yFromLocal(point.y) },
+              to: { x: xFromLocal(point.x), y: yFromLocal(point.y) },
+            };
+            const newLastLine: SketchLine = { ...lastLine, segments: [newSegment] };
+            const newLines = [...oldSketch.lines, newLastLine];
+            const newSketch = { ...oldSketch, lines: newLines };
+            return newSketch;
+          } else {
+            return oldSketch;
+          }
+        } else {
+          return oldSketch;
+        }
+      });
+    },
+    [xFromLocal, yFromLocal]
+  );
 
-  const handleUserZoom = (amount: number) => {
-    const newZoom = zoom + amount;
-    const newZoomLimited = clamp(newZoom, zoomMin, zoomMax);
-    setZoom(newZoomLimited);
-  };
+  const handleUserPan = useCallback((from: Point, to: Point) => {
+    setViewport((oldViewport) => {
+      const newViewportX = oldViewport.x - ((to.x - from.x) * oldViewport.width) / boardWidth;
+      const newVieportXLimited = clamp(newViewportX, -oldViewport.width / 2, boardWidth - oldViewport.width / 2);
+      const newViewportY = oldViewport.y - ((to.y - from.y) * oldViewport.height) / boardHeight;
+      const newViewportYLimited = clamp(newViewportY, -oldViewport.height / 2, boardHeight - oldViewport.height / 2);
+      const newViewport: SketchBoardViewport = { ...oldViewport, x: newVieportXLimited, y: newViewportYLimited };
+      return newViewport;
+    });
+  }, []);
+
+  const handleUserZoom = useCallback((amount: number) => {
+    setZoom((oldZoom) => {
+      const newZoom = oldZoom + amount;
+      const newZoomLimited = clamp(newZoom, zoomMin, zoomMax);
+      return newZoomLimited;
+    });
+  }, []);
 
   return (
     <div>
