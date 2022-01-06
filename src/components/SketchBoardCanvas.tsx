@@ -62,6 +62,8 @@ export default function SketchBoardCanvas({
     shouldRerender.current = true;
   }, [sketch, height, width, viewport]);
 
+  const lastDrawnSegmentId = useRef<string | null>(null);
+
   const { handleMouseDown, handleMouseUp, handleMouseMove } = useMouseDrawDetector({
     canvasRef: canvasRef,
     onUserStartDrawing: onUserStartDrawing,
@@ -104,13 +106,14 @@ export default function SketchBoardCanvas({
 
       if (canvasRef?.current != null) {
         const context = canvasRef.current.getContext('2d')!;
-        context.clearRect(0, 0, width, height);
+
+        let foundLastDrawnSegment = false;
 
         // Show gray background, where the drawing is not allowed
-        context.fillStyle = '#cccccc';
-        context.fillRect(xToLocal(-width), yToLocal(-height), widthToLocal(width * 3), heightToLocal(height * 3));
-        context.fillStyle = '#ffffff';
-        context.fillRect(xToLocal(0), yToLocal(0), widthToLocal(width), heightToLocal(height));
+        //context.fillStyle = '#cccccc';
+        //context.fillRect(xToLocal(-width), yToLocal(-height), widthToLocal(width * 3), heightToLocal(height * 3));
+        //context.fillStyle = '#ffffff';
+        //context.fillRect(xToLocal(0), yToLocal(0), widthToLocal(width), heightToLocal(height));
 
         context.save();
         context.lineCap = 'round';
@@ -121,11 +124,18 @@ export default function SketchBoardCanvas({
           context.lineWidth = (line.thickness * (width / viewport.width + height / viewport.height)) / 2;
           context.beginPath();
           line.segments.forEach((segment) => {
-            const fromLocal = pointToLocal(segment.from);
-            const toLocal = pointToLocal(segment.to);
-            context.moveTo(fromLocal.x, fromLocal.y);
-            context.lineTo(toLocal.x, toLocal.y);
-            context.stroke();
+            if (!foundLastDrawnSegment && lastDrawnSegmentId.current !== null) {
+              if (segment.id === lastDrawnSegmentId.current) {
+                foundLastDrawnSegment = true;
+              }
+            } else {
+              const fromLocal = pointToLocal(segment.from);
+              const toLocal = pointToLocal(segment.to);
+              context.moveTo(fromLocal.x, fromLocal.y);
+              context.lineTo(toLocal.x, toLocal.y);
+              context.stroke();
+              lastDrawnSegmentId.current = segment.id;
+            }
           });
           context.closePath();
         });

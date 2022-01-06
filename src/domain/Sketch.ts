@@ -43,6 +43,7 @@ export function middle(p1: Point, p2: Point) {
 export interface SketchLineSegment {
   from: Point;
   to: Point;
+  id: string;
 }
 
 export interface SketchLine {

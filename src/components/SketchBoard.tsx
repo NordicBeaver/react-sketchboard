@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid';
 import React, { useCallback } from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { Sketch, Point, SketchLine, addPoints, substractPoints, SketchLineSegment } from '../domain/Sketch';
@@ -58,7 +59,7 @@ export default function SketchBoard() {
       setSketch((oldSketch) => {
         const fromGlobal: Point = { x: xFromLocal(from.x), y: yFromLocal(from.y) };
         const toGlobal: Point = { x: xFromLocal(to.x), y: yFromLocal(to.y) };
-        const newLineSegment = { from: fromGlobal, to: toGlobal };
+        const newLineSegment = { from: fromGlobal, to: toGlobal, id: nanoid() };
         const lastLine = oldSketch.lines[oldSketch.lines.length - 1];
         const newLastLineSegments = [...lastLine.segments, newLineSegment];
         const newLastLine: SketchLine = { ...lastLine, segments: newLastLineSegments };
@@ -93,6 +94,7 @@ export default function SketchBoard() {
             const newSegment: SketchLineSegment = {
               from: { x: xFromLocal(point.x), y: yFromLocal(point.y) },
               to: { x: xFromLocal(point.x), y: yFromLocal(point.y) },
+              id: nanoid(),
             };
             const newLastLine: SketchLine = { ...lastLine, segments: [newSegment] };
             const newLines = [...oldSketch.lines, newLastLine];
