@@ -8,42 +8,44 @@ function renderSketch(canvas: HTMLCanvasElement, sketch: Sketch, lastDrawnSegmen
 
   let foundLastDrawnSegment = false;
   let newLastDrawnSegment: string | null = lastDrawnSegmentId;
+
   context.save();
   context.lineCap = 'round';
   sketch.lines.forEach((line) => {
     context.strokeStyle = `#${line.color}`;
     context.lineWidth = line.thickness;
-    context.beginPath();
     line.segments.forEach((segment) => {
       if (!foundLastDrawnSegment && lastDrawnSegmentId !== null) {
         if (segment.id === lastDrawnSegmentId) {
           foundLastDrawnSegment = true;
         }
       } else {
+        context.beginPath();
         context.moveTo(segment.from.x, segment.from.y);
         context.lineTo(segment.to.x, segment.to.y);
         context.stroke();
+        context.closePath();
         newLastDrawnSegment = segment.id;
       }
     });
-    context.closePath();
   });
 
   // Redraw all if last drawn segment wasn't found.
   // For example, this can happen if a user pressed Undo.
   if (!foundLastDrawnSegment) {
+    console.log('NO LAST');
     context.clearRect(0, 0, canvas.width, canvas.height);
     sketch.lines.forEach((line) => {
       context.strokeStyle = `#${line.color}`;
       context.lineWidth = line.thickness;
-      context.beginPath();
       line.segments.forEach((segment) => {
+        context.beginPath();
         context.moveTo(segment.from.x, segment.from.y);
         context.lineTo(segment.to.x, segment.to.y);
         context.stroke();
         newLastDrawnSegment = segment.id;
+        context.closePath();
       });
-      context.closePath();
     });
   }
 
