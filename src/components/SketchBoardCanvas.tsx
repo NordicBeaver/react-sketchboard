@@ -35,6 +35,14 @@ export default function SketchBoardCanvas({
 }: SketchBoardCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  useEffect(() => {
+    const offscreenCanvas = document.createElement('canvas');
+    offscreenCanvas.width = width;
+    offscreenCanvas.height = height;
+    offscreenCanvasRef.current = offscreenCanvas;
+  }, [width, height]);
+
   const animationFrameRequestRef = useRef<number | null>(null);
 
   const sketchToRender = useRef(sketch);
@@ -91,37 +99,16 @@ export default function SketchBoardCanvas({
       const width = widthToRender.current;
       const height = heightToRender.current;
 
-      const xToLocal = (x: number) => ((x - viewport.x) * width) / viewport.width;
-      const yToLocal = (y: number) => ((y - viewport.y) * height) / viewport.height;
-      const widthToLocal = (w: number) => (w * width) / viewport.width;
-      const heightToLocal = (h: number) => (h * height) / viewport.height;
-
-      const pointToLocal = (point: Point) => {
-        const result: Point = {
-          x: ((point.x - viewport.x) * width) / viewport.width,
-          y: ((point.y - viewport.y) * height) / viewport.height,
-        };
-        return result;
-      };
-
-      if (canvasRef?.current != null) {
-        const context = canvasRef.current.getContext('2d')!;
+      if (offscreenCanvasRef.current != null) {
+        const context = offscreenCanvasRef.current.getContext('2d')!;
 
         let foundLastDrawnSegment = false;
 
-        // Show gray background, where the drawing is not allowed
-        //context.fillStyle = '#cccccc';
-        //context.fillRect(xToLocal(-width), yToLocal(-height), widthToLocal(width * 3), heightToLocal(height * 3));
-        //context.fillStyle = '#ffffff';
-        //context.fillRect(xToLocal(0), yToLocal(0), widthToLocal(width), heightToLocal(height));
-
         context.save();
         context.lineCap = 'round';
-        context.rect(xToLocal(0), yToLocal(0), widthToLocal(width), heightToLocal(height));
-        context.clip();
         sketch.lines.forEach((line) => {
           context.strokeStyle = `#${line.color}`;
-          context.lineWidth = (line.thickness * (width / viewport.width + height / viewport.height)) / 2;
+          context.lineWidth = line.thickness;
           context.beginPath();
           line.segments.forEach((segment) => {
             if (!foundLastDrawnSegment && lastDrawnSegmentId.current !== null) {
@@ -129,16 +116,38 @@ export default function SketchBoardCanvas({
                 foundLastDrawnSegment = true;
               }
             } else {
-              const fromLocal = pointToLocal(segment.from);
-              const toLocal = pointToLocal(segment.to);
-              context.moveTo(fromLocal.x, fromLocal.y);
-              context.lineTo(toLocal.x, toLocal.y);
+              context.moveTo(segment.from.x, segment.from.y);
+              context.lineTo(segment.to.x, segment.to.y);
               context.stroke();
               lastDrawnSegmentId.current = segment.id;
             }
           });
           context.closePath();
         });
+        context.restore();
+      }
+
+      if (canvasRef.current !== null && offscreenCanvasRef.current !== null) {
+        const context = canvasRef.current.getContext('2d')!;
+
+        context.save();
+
+        context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+
+        context.scale(canvasRef.current.width / viewport.width, canvasRef.current.height / viewport.height);
+        context.translate(-viewport.x, -viewport.y);
+
+        // Show gray background, where the drawing is not allowed
+        context.fillStyle = '#cccccc';
+        context.fillRect(-width, -height, width * 3, height * 3);
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, width, height);
+
+        context.rect(0, 0, width, height);
+        context.clip();
+
+        context.drawImage(offscreenCanvasRef.current, 0, 0);
+
         context.restore();
       }
     }
