@@ -3,6 +3,54 @@ import { Point, Sketch } from '../domain/Sketch';
 import { useMouseDrawDetector } from '../hooks/useMouseDrawDetector';
 import { useTouchDrawDetector } from '../hooks/useTouchDrawDetector';
 
+function renderSketch(canvas: HTMLCanvasElement, sketch: Sketch, lastDrawnSegmentId: string | null) {
+  const context = canvas.getContext('2d')!;
+
+  let foundLastDrawnSegment = false;
+  let newLastDrawnSegment: string | null = lastDrawnSegmentId;
+  context.save();
+  context.lineCap = 'round';
+  sketch.lines.forEach((line) => {
+    context.strokeStyle = `#${line.color}`;
+    context.lineWidth = line.thickness;
+    context.beginPath();
+    line.segments.forEach((segment) => {
+      if (!foundLastDrawnSegment && lastDrawnSegmentId !== null) {
+        if (segment.id === lastDrawnSegmentId) {
+          foundLastDrawnSegment = true;
+        }
+      } else {
+        context.moveTo(segment.from.x, segment.from.y);
+        context.lineTo(segment.to.x, segment.to.y);
+        context.stroke();
+        newLastDrawnSegment = segment.id;
+      }
+    });
+    context.closePath();
+  });
+
+  // Redraw all if last drawn segment wasn't found.
+  // For example, this can happen if a user pressed Undo.
+  if (!foundLastDrawnSegment) {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    sketch.lines.forEach((line) => {
+      context.strokeStyle = `#${line.color}`;
+      context.lineWidth = line.thickness;
+      context.beginPath();
+      line.segments.forEach((segment) => {
+        context.moveTo(segment.from.x, segment.from.y);
+        context.lineTo(segment.to.x, segment.to.y);
+        context.stroke();
+        newLastDrawnSegment = segment.id;
+      });
+      context.closePath();
+    });
+  }
+
+  context.restore();
+  return newLastDrawnSegment;
+}
+
 export interface SketchBoardViewport {
   x: number;
   y: number;
@@ -100,31 +148,7 @@ export default function SketchBoardCanvas({
       const height = heightToRender.current;
 
       if (offscreenCanvasRef.current != null) {
-        const context = offscreenCanvasRef.current.getContext('2d')!;
-
-        let foundLastDrawnSegment = false;
-
-        context.save();
-        context.lineCap = 'round';
-        sketch.lines.forEach((line) => {
-          context.strokeStyle = `#${line.color}`;
-          context.lineWidth = line.thickness;
-          context.beginPath();
-          line.segments.forEach((segment) => {
-            if (!foundLastDrawnSegment && lastDrawnSegmentId.current !== null) {
-              if (segment.id === lastDrawnSegmentId.current) {
-                foundLastDrawnSegment = true;
-              }
-            } else {
-              context.moveTo(segment.from.x, segment.from.y);
-              context.lineTo(segment.to.x, segment.to.y);
-              context.stroke();
-              lastDrawnSegmentId.current = segment.id;
-            }
-          });
-          context.closePath();
-        });
-        context.restore();
+        lastDrawnSegmentId.current = renderSketch(offscreenCanvasRef.current, sketch, lastDrawnSegmentId.current);
       }
 
       if (canvasRef.current !== null && offscreenCanvasRef.current !== null) {
