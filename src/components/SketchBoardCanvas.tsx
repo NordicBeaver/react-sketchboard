@@ -169,6 +169,7 @@ export default function SketchBoardCanvas({
         context.fillStyle = '#ffffff';
         context.fillRect(0, 0, width, height);
 
+        context.beginPath();
         context.rect(0, 0, width, height);
         context.clip();
 
