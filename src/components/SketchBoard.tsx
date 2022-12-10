@@ -14,9 +14,10 @@ const zoomMax = 4;
 
 export interface SketchBoardProps {
   weight: number;
+  color: string;
 }
 
-export default function SketchBoard({ weight }: SketchBoardProps) {
+export default function SketchBoard({ weight, color }: SketchBoardProps) {
   const [sketch, setSketch] = useState<Sketch>({
     lines: [],
   });
@@ -40,12 +41,6 @@ export default function SketchBoard({ weight }: SketchBoardProps) {
 
   const xFromLocal = useCallback((x: number) => (x * viewport.width) / boardWidth + viewport.x, [viewport]);
   const yFromLocal = useCallback((y: number) => (y * viewport.height) / boardHeight + viewport.y, [viewport]);
-  const widthFromLocal = (w: number) => (w * viewport.width) / boardWidth;
-  const heightFromLocal = (h: number) => (h * viewport.height) / boardHeight;
-
-  const colors = ['000000', 'ff0000', '00ff00', '0000ff'];
-
-  const [currentColor, setCurrentColor] = useState('000000');
 
   const hadnleUndoClick = useCallback(() => {
     setSketch((oldSketch) => {
@@ -75,13 +70,13 @@ export default function SketchBoard({ weight }: SketchBoardProps) {
   const handleUserStartDrawing = useCallback(
     (point: Point) => {
       setSketch((oldSketch) => {
-        const newLine: SketchLine = { segments: [], weight: weight, color: currentColor };
+        const newLine: SketchLine = { segments: [], weight: weight, color: color };
         const newLines = [...oldSketch.lines, newLine];
         const newSketch = { ...oldSketch, lines: newLines };
         return newSketch;
       });
     },
-    [currentColor, weight]
+    [color, weight]
   );
 
   const handleUserFinishDrawing = useCallback(
@@ -161,7 +156,6 @@ export default function SketchBoard({ weight }: SketchBoardProps) {
           onChange={(e) => setZoom(parseInt(e.target.value) / 10)}
         ></input>
       </div>
-      <ColorPicker options={colors} current={currentColor} onPick={(color) => setCurrentColor(color)}></ColorPicker>
       <SketchBoardCanvas
         width={boardWidth}
         height={boardHeight}
