@@ -10,12 +10,17 @@ const boardHeight = 400;
 const zoomMin = 0.5;
 const zoomMax = 4;
 
+export interface SketchBoardControls {
+  undo: () => void;
+}
+
 export interface SketchBoardProps {
   weight: number;
   color: string;
+  onControlsChange?: (controls: SketchBoardControls) => void;
 }
 
-export default function SketchBoard({ weight, color }: SketchBoardProps) {
+export default function SketchBoard({ weight, color, onControlsChange }: SketchBoardProps) {
   const [sketch, setSketch] = useState<Sketch>({
     lines: [],
   });
@@ -39,14 +44,6 @@ export default function SketchBoard({ weight, color }: SketchBoardProps) {
 
   const xFromLocal = useCallback((x: number) => (x * viewport.width) / boardWidth + viewport.x, [viewport]);
   const yFromLocal = useCallback((y: number) => (y * viewport.height) / boardHeight + viewport.y, [viewport]);
-
-  const hadnleUndoClick = useCallback(() => {
-    setSketch((oldSketch) => {
-      const newLines = oldSketch.lines.slice(0, -1);
-      const newSketch: Sketch = { ...oldSketch, lines: newLines };
-      return newSketch;
-    });
-  }, []);
 
   const handleUserDraw = useCallback(
     (from: Point, to: Point) => {
@@ -124,11 +121,23 @@ export default function SketchBoard({ weight, color }: SketchBoardProps) {
     });
   }, []);
 
+  const undo = useCallback(() => {
+    setSketch((oldSketch) => {
+      const newLines = oldSketch.lines.slice(0, -1);
+      const newSketch: Sketch = { ...oldSketch, lines: newLines };
+      return newSketch;
+    });
+  }, []);
+
+  useEffect(() => {
+    const controls: SketchBoardControls = {
+      undo: undo,
+    };
+    onControlsChange?.(controls);
+  }, [undo, onControlsChange]);
+
   return (
     <div>
-      <div>
-        <button onClick={hadnleUndoClick}>Undo</button>
-      </div>
       <SketchBoardCanvas
         width={boardWidth}
         height={boardHeight}
