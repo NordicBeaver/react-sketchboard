@@ -1,9 +1,7 @@
 import { nanoid } from 'nanoid';
-import React, { useCallback } from 'react';
-import { useState, useEffect, useRef } from 'react';
-import { Sketch, Point, SketchLine, addPoints, substractPoints, SketchLineSegment } from '../domain/Sketch';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Point, Sketch, SketchLine, SketchLineSegment } from '../domain/Sketch';
 import { clamp } from '../util';
-import ColorPicker from './ColorPicker';
 import SketchBoardCanvas, { SketchBoardViewport } from './SketchBoardCanvas';
 
 const boardWidth = 400;
@@ -130,31 +128,6 @@ export default function SketchBoard({ weight, color }: SketchBoardProps) {
     <div>
       <div>
         <button onClick={hadnleUndoClick}>Undo</button>
-      </div>
-      <div>
-        <input
-          type="range"
-          min="-100"
-          max="100"
-          value={viewport.x}
-          onChange={(e) => setViewport({ ...viewport, x: parseInt(e.target.value) })}
-        ></input>
-        <input
-          type="range"
-          min="-100"
-          max="100"
-          value={viewport.y}
-          onChange={(e) => setViewport({ ...viewport, y: parseInt(e.target.value) })}
-        ></input>
-      </div>
-      <div>
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={zoom * 10}
-          onChange={(e) => setZoom(parseInt(e.target.value) / 10)}
-        ></input>
       </div>
       <SketchBoardCanvas
         width={boardWidth}
