@@ -5,7 +5,6 @@ import { Sketch, Point, SketchLine, addPoints, substractPoints, SketchLineSegmen
 import { clamp } from '../util';
 import ColorPicker from './ColorPicker';
 import SketchBoardCanvas, { SketchBoardViewport } from './SketchBoardCanvas';
-import ThicknessPicker from './ThicknessPicker';
 
 const boardWidth = 400;
 const boardHeight = 400;
@@ -13,7 +12,11 @@ const boardHeight = 400;
 const zoomMin = 0.5;
 const zoomMax = 4;
 
-export default function SketchBoard() {
+export interface SketchBoardProps {
+  weight: number;
+}
+
+export default function SketchBoard({ weight }: SketchBoardProps) {
   const [sketch, setSketch] = useState<Sketch>({
     lines: [],
   });
@@ -41,10 +44,8 @@ export default function SketchBoard() {
   const heightFromLocal = (h: number) => (h * viewport.height) / boardHeight;
 
   const colors = ['000000', 'ff0000', '00ff00', '0000ff'];
-  const thicknesses = [1, 2, 4, 8];
 
   const [currentColor, setCurrentColor] = useState('000000');
-  const [currentThickness, setCurrentThickness] = useState(2);
 
   const hadnleUndoClick = useCallback(() => {
     setSketch((oldSketch) => {
@@ -74,13 +75,13 @@ export default function SketchBoard() {
   const handleUserStartDrawing = useCallback(
     (point: Point) => {
       setSketch((oldSketch) => {
-        const newLine: SketchLine = { segments: [], thickness: currentThickness, color: currentColor };
+        const newLine: SketchLine = { segments: [], weight: weight, color: currentColor };
         const newLines = [...oldSketch.lines, newLine];
         const newSketch = { ...oldSketch, lines: newLines };
         return newSketch;
       });
     },
-    [currentColor, currentThickness]
+    [currentColor, weight]
   );
 
   const handleUserFinishDrawing = useCallback(
@@ -161,11 +162,6 @@ export default function SketchBoard() {
         ></input>
       </div>
       <ColorPicker options={colors} current={currentColor} onPick={(color) => setCurrentColor(color)}></ColorPicker>
-      <ThicknessPicker
-        options={thicknesses}
-        current={currentThickness}
-        onPick={(thickness) => setCurrentThickness(thickness)}
-      ></ThicknessPicker>
       <SketchBoardCanvas
         width={boardWidth}
         height={boardHeight}

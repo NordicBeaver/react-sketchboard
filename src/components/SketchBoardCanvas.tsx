@@ -13,7 +13,7 @@ function renderSketch(canvas: HTMLCanvasElement, sketch: Sketch, lastDrawnSegmen
   context.lineCap = 'round';
   sketch.lines.forEach((line) => {
     context.strokeStyle = `#${line.color}`;
-    context.lineWidth = line.thickness;
+    context.lineWidth = line.weight;
     line.segments.forEach((segment) => {
       if (!foundLastDrawnSegment && lastDrawnSegmentId !== null) {
         if (segment.id === lastDrawnSegmentId) {
@@ -37,7 +37,7 @@ function renderSketch(canvas: HTMLCanvasElement, sketch: Sketch, lastDrawnSegmen
     context.clearRect(0, 0, canvas.width, canvas.height);
     sketch.lines.forEach((line) => {
       context.strokeStyle = `#${line.color}`;
-      context.lineWidth = line.thickness;
+      context.lineWidth = line.weight;
       line.segments.forEach((segment) => {
         context.beginPath();
         context.moveTo(segment.from.x, segment.from.y);

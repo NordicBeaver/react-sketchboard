@@ -48,7 +48,7 @@ export interface SketchLineSegment {
 
 export interface SketchLine {
   segments: SketchLineSegment[];
-  thickness: number;
+  weight: number;
   color: string;
 }
 

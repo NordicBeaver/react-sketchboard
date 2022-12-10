@@ -1,10 +1,11 @@
 import React from 'react';
 import SketchBoard from './components/SketchBoard';
+import SketchBoardDemo from './components/SketchBoardDemo';
 
 function App() {
   return (
     <div className="App">
-      <SketchBoard></SketchBoard>
+      <SketchBoardDemo></SketchBoardDemo>
     </div>
   );
 }

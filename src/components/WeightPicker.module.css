@@ -1,4 +1,4 @@
-.thicknessPicker {
+.weightPicker {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -6,7 +6,7 @@
   flex-direction: row;
 }
 
-.thicknessPickerOption {
+.weightPickerOption {
   box-sizing: border-box;
   width: 24px;
   height: 24px;
@@ -18,7 +18,7 @@
   justify-content: center;
 }
 
-.thicknessPickerOption.active {
+.weightPickerOption.active {
   border: 2px solid black;
 }
 
