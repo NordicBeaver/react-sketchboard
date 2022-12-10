@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Point, Sketch, SketchLine, SketchLineSegment } from '../domain/Sketch';
 import { clamp } from '../util';
-import SketchBoardCanvas, { SketchBoardViewport } from './SketchBoardCanvas';
+import SketchBoardCanvas, { SketchBoardCanvasControls, SketchBoardViewport } from './SketchBoardCanvas';
 
 const boardWidth = 400;
 const boardHeight = 400;
@@ -12,6 +12,7 @@ const zoomMax = 4;
 
 export interface SketchBoardControls {
   undo: () => void;
+  getImageDataUrl: () => string;
 }
 
 export interface SketchBoardProps {
@@ -21,12 +22,12 @@ export interface SketchBoardProps {
 }
 
 export default function SketchBoard({ weight, color, onControlsChange }: SketchBoardProps) {
-  const [sketch, setSketch] = useState<Sketch>({
-    lines: [],
-  });
-
+  const [sketch, setSketch] = useState<Sketch>({ lines: [] });
   const [viewport, setViewport] = useState<SketchBoardViewport>({ x: 0, y: 0, width: boardWidth, height: boardHeight });
   const [zoom, setZoom] = useState(1);
+  const [canvasControls, setCanvasControls] = useState<SketchBoardCanvasControls | null>(null);
+
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const prevZoom = useRef(1);
 
   useEffect(() => {
@@ -130,11 +131,16 @@ export default function SketchBoard({ weight, color, onControlsChange }: SketchB
   }, []);
 
   useEffect(() => {
+    if (!canvasControls) {
+      return;
+    }
+
     const controls: SketchBoardControls = {
       undo: undo,
+      getImageDataUrl: canvasControls.getImageDataUrl,
     };
     onControlsChange?.(controls);
-  }, [undo, onControlsChange]);
+  }, [undo, canvasControls, onControlsChange]);
 
   return (
     <div>
@@ -148,6 +154,7 @@ export default function SketchBoard({ weight, color, onControlsChange }: SketchB
         onUserFinishDrawing={handleUserFinishDrawing}
         onUserPan={handleUserPan}
         onUserZoom={handleUserZoom}
+        onControlsChange={setCanvasControls}
       ></SketchBoardCanvas>
     </div>
   );

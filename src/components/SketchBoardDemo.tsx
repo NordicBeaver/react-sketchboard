@@ -9,12 +9,19 @@ const colorOptions = ['000000', 'ff0000', '00ff00', '0000ff'];
 export default function SketchBoardDemo() {
   const [currentWeight, setCurrentWeight] = useState(2);
   const [currentColor, setCurrentColor] = useState('000000');
-
   const [boardControls, setBoardControls] = useState<SketchBoardControls | null>(null);
+  const [imageDataUrl, setImageDataUrl] = useState<string>('');
 
   const hadnleUndoClick = useCallback(() => {
     boardControls?.undo();
   }, [boardControls]);
+
+  const handleGetImageDataClick = () => {
+    const dataUrl = boardControls?.getImageDataUrl();
+    if (dataUrl) {
+      setImageDataUrl(dataUrl);
+    }
+  };
 
   return (
     <div>
@@ -32,6 +39,11 @@ export default function SketchBoardDemo() {
         onPick={(color) => setCurrentColor(color)}
       ></ColorPicker>
       <SketchBoard weight={currentWeight} color={currentColor} onControlsChange={setBoardControls}></SketchBoard>
+      <div>
+        <h1>image data</h1>
+        <button onClick={handleGetImageDataClick}>Get data</button>
+        <p>{imageDataUrl}</p>
+      </div>
     </div>
   );
 }

@@ -60,6 +60,10 @@ export interface SketchBoardViewport {
   height: number;
 }
 
+export interface SketchBoardCanvasControls {
+  getImageDataUrl: () => string;
+}
+
 export interface SketchBoardCanvasProps {
   width: number;
   height: number;
@@ -70,6 +74,7 @@ export interface SketchBoardCanvasProps {
   onUserFinishDrawing?: (point: Point) => void;
   onUserPan?: (from: Point, to: Point) => void;
   onUserZoom?: (amount: number) => void;
+  onControlsChange?: (controls: SketchBoardCanvasControls) => void;
 }
 
 export default function SketchBoardCanvas({
@@ -82,6 +87,7 @@ export default function SketchBoardCanvas({
   onUserFinishDrawing,
   onUserPan,
   onUserZoom,
+  onControlsChange,
 }: SketchBoardCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -139,6 +145,22 @@ export default function SketchBoardCanvas({
     onUserPan: onUserPan,
     onUserZoom: onUserZoom,
   });
+
+  const getImageDataUrl = useCallback(() => {
+    if (!canvasRef.current) {
+      throw new Error('Error getting image data from SketchBoardCanvas: No canvas ref.');
+    }
+
+    const dataUrl = canvasRef.current.toDataURL();
+    return dataUrl;
+  }, []);
+
+  useEffect(() => {
+    const controls: SketchBoardCanvasControls = {
+      getImageDataUrl: getImageDataUrl,
+    };
+    onControlsChange?.(controls);
+  }, [getImageDataUrl, onControlsChange]);
 
   const animationFrame = useCallback(() => {
     if (shouldRerender.current === true) {
