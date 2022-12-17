@@ -147,11 +147,11 @@ export default function SketchBoardCanvas({
   });
 
   const getImageDataUrl = useCallback(() => {
-    if (!canvasRef.current) {
-      throw new Error('Error getting image data from SketchBoardCanvas: No canvas ref.');
+    if (!offscreenCanvasRef.current) {
+      throw new Error('Error getting image data from SketchBoardCanvas: No offscreen canvas ref.');
     }
 
-    const dataUrl = canvasRef.current.toDataURL();
+    const dataUrl = offscreenCanvasRef.current.toDataURL();
     return dataUrl;
   }, []);
 

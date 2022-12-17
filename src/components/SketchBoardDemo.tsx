@@ -43,6 +43,7 @@ export default function SketchBoardDemo() {
         <h1>image data</h1>
         <button onClick={handleGetImageDataClick}>Get data</button>
         <p>{imageDataUrl}</p>
+        <img src={imageDataUrl}></img>
       </div>
     </div>
   );
